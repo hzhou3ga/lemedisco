@@ -12,7 +12,7 @@ if ( $me == "" ) exit
 
 echo $i $me 
 
-if ( -e ef-fexactpval-gene-z1.65-q0.05-noX-filt1.0/${i}_ef.txt  ) goto ok1
+#if ( -e ef-fexactpval-gene-z1.65-q0.05-noX-filt1.0/${i}_ef.txt  ) goto ok1
 
 set job=/tmp/${USER}/bet_ef_lemedisco.job
 set jbn=X${me}_ef

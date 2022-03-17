@@ -14,7 +14,9 @@ if ( ! -e $workdir ) mkdir -p $workdir
 set mydir=`pwd`
 
 cd $workdir
-unzip -x -o $mydir/thisworksresult/alleffexactpvalgenez1.65q0.05noXfilt1.0.zip  > ! _zip2.out
+unzip -x -o $mydir/thisworksresult/alleffexactpvalgenez1.65q0.05noXfilt1.0_1.zip  > ! _zip2.out
+unzip -x -o $mydir/thisworksresult/alleffexactpvalgenez1.65q0.05noXfilt1.0_2.zip  > ! _zip2.out
+unzip -x -o $mydir/thisworksresult/alleffexactpvalgenez1.65q0.05noXfilt1.0_3.zip  > ! _zip2.out
 cp -u $mydir/../data/drug_indication_comb_cls_indication.ind  .
 cp -u $mydir/../bin/overlap_p_cls.py $mydir/../bin/scan_pval_py.job .
 
