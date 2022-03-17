@@ -9,7 +9,10 @@ set lst=drug_indication_comb_cls_indication.ind
 
 cp -u $mydir/../data/$lst $mydir/../bin/getef2genename.job $mydir/../data/list_genekb .
 
-set src2=$mydir/../data/humanatlas/2021
+#set src2=$mydir/../data/humanatlas/2021
+unzip -x -o $mydir/../data/allhumanatlas1.zip  >! _zip1.out 
+unzip -x -o $mydir/../data/allhumanatlas2.zip  >! _zip1.out 
+set src2=humanatlas/2021
 
 set npp=`wc -l $lst | awk '{print $1}'`
 

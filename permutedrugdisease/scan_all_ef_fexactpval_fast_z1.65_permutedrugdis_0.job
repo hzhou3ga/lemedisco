@@ -10,15 +10,16 @@ set mydir=`pwd`
 set workdir=/tmp/${USER}/${PBS_JOBID}
 if ( ! -e $workdir ) mkdir -p $workdir
 cd $workdir 
-cp $mydir/../data/drug_indication_comb_cls_indication.ind $mydir/../data/all_zscore_permutedis.out .
+cp $mydir/../data/drug_indication_comb_cls_indication.ind $mydir/../data/all_zscore_permutedis.out.gz .
 cp -u $mydir/../data/drug_5.09_app_ta.txt  $mydir/../data/drug_5.09_app.lst .
 set nd=`wc -l drug_indication_comb_cls_indication.ind | awk '{print $1}'`
+gzip -d -f all_zscore_permutedis.out.gz 
 
 
 set k=$1
 lpk:
 
-if ( -e $mydir/ef-fexactpval-z1.65/${k}_ef.txt  ) then
+if ( -e $mydir/ef-fexactpval-z1.65/${k}_ef.txtx  ) then
 cat $mydir/ef-fexactpval-z1.65/${k}_ef.txt >! _ef.txt 
 goto ok1
 endif 
