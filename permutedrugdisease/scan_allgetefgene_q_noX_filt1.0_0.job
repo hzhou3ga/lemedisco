@@ -1,0 +1,36 @@
+#!/bin/tcsh -f  
+
+
+set mydir=`pwd`
+set workdir=/tmp/${USER}/${PBS_JOBID}
+if ( ! -e $workdir ) mkdir -p $workdir 
+cd $workdir 
+set lst=drug_indication_comb_cls_indication.ind
+
+cp -u $mydir/../data/$lst $mydir/../bin/getef2genename.job $mydir/../data/list_genekb .
+
+set src2=$mydir/../data/humanatlas/2021
+
+set npp=`wc -l $lst | awk '{print $1}'`
+
+set me=$1
+set i=$1
+
+set cut=0.05
+
+echo $i $me
+if ( ! -e $mydir/ef-fexactpval-gene-z1.65-q${cut}-noX-filt1.0 ) mkdir  $mydir/ef-fexactpval-gene-z1.65-q${cut}-noX-filt1.0
+
+cat  $mydir/ef-fexactpval-z1.65-q/$i"_ef.txt" | awk '{if($9<'$cut') print $0}' >! __tmp1.lst
+./getef2genename.job __tmp1.lst | awk '{if(!($10=="XXXXXX"&&$11=="XXXXXX_HUMAN")) print $0}' > ! __tmp2.lst
+
+if ( -e $src2/disease-filt1.0/${me}.txt   ) then
+set nex=`wc -l $src2/disease-filt1.0/${me}.txt  | awk '{print $1}'`
+cat $src2/disease-filt1.0/${me}.txt __tmp2.lst | awk '{i=i+1;if(i<='$nex'){t[i]=$1}else{kk=-1;for(l=1;l<='$nex';l++)if($1==t[l]){kk=l;break};if(kk<0) print $0}}' >!  __tmp3.lst
+mv -f __tmp3.lst $mydir/ef-fexactpval-gene-z1.65-q${cut}-noX-filt1.0/$i"_ef.txt"
+endif
+mv -f __tmp2.lst $mydir/ef-fexactpval-gene-z1.65-q${cut}-noX-filt1.0/$i"_ef.txt"
+endif
+
+ok1:
+

@@ -1,0 +1,8 @@
+#!/bin/tcsh -f 
+
+if ( $1 == "" ) exit
+set ef=$1
+
+set np=`wc -l list_genekb | awk '{print $1}'`
+cat list_genekb $ef  | awk '{i=i+1;if(i<='$np'){t[i]=$1;s[i]=$2;u[i]=$4}else{for(l=1;l<='$np';l++)if(t[l]==$1) print $0,s[l],u[l]}}'  
+

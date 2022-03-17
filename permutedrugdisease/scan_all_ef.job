@@ -1,0 +1,41 @@
+#!/bin/tcsh  -f
+
+set lst=$1
+if ( $1 == "" ) set lst=../data/drug_indication_comb_cls_indication.ind 
+if ( ! -e ef-fexactpval-gene-z1.65-q0.05-noX-filt1.0 ) mkdir ef-fexactpval-gene-z1.65-q0.05-noX-filt1.0
+if ( ! -e /tmp/${USER} ) mkdir /tmp/${USER}
+
+set i=1
+lpi:
+set me=`cat  $lst | awk 'BEGIN{i1=('$i'-1)*1;i2='$i'*1;i=0}{i=i+1;if(i>i1&&i<=i2) print $1}'` 
+if ( $me == "" ) exit 
+
+echo $i $me 
+
+#if ( -e ef-fexactpval-gene-z1.65-q0.05-noX-filt1.0/${i}_ef.txt  ) goto ok1
+
+set job=/tmp/${USER}/bet_ef_permuted.job
+set jbn=X${me}_ef
+set mydir=`pwd`
+
+echo "#\!/bin/tcsh -f " > ! $job
+echo "#PBS -e $mydir " >> $job
+echo "#PBS -N $jbn " >> $job
+echo " " >> $job
+echo "set rundir=$mydir " >> $job
+echo "cd  $mydir " >> $job 
+echo "./scan_all_ef_fexactpval_fast_z1.65_permutedrugdis_0.job $me " >> $job 
+echo "./scan_allgetefgene_q_noX_filt1.0_0.job $me  " >> $job 
+chmod a+x $job 
+
+setenv PBS_JOBID testfrgbet-overlap-permuted-q/ 
+$job 
+#exit
+#$sparks/d-bin/subme_h_nocasp_nopersonal_sm.job $job  $jbn  10 
+
+ok1:
+
+@ i = $i + 1
+goto lpi
+
+ok:

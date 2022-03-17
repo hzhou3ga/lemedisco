@@ -1,0 +1,11 @@
+#!/bin/tcsh -f 
+
+set fl=$1
+if ( $1 == "" ) exit
+
+set ov=`head -1 $fl | awk '{print $1}'`
+set nt=`head -1 $fl | awk '{print $2}'`
+set na=`head -1 $fl | awk '{print $3}'`
+set nb=`head -1 $fl | awk '{print $4}'`
+
+$PYTHON ./overlap_p_cls.py  $ov $nt $na $nb

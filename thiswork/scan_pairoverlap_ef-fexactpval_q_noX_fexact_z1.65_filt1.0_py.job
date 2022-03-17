@@ -1,0 +1,48 @@
+#!/bin/tcsh -f 
+
+if( $1 == "" ) exit
+
+
+if ( ! ($?PBS_JOBID) ) then
+setenv PBS_JOBID testpairover
+endif
+setenv PATH /bin/:/sbin/:/usr/bin
+
+set workdir=/tmp/${USER}/${PBS_JOBID}/$1
+
+if ( ! -e $workdir ) mkdir -p $workdir
+set mydir=`pwd`
+
+cd $workdir
+unzip -x -o $mydir/thisworksresult/alleffexactpvalgenez1.65q0.05noXfilt1.0.zip  > ! _zip2.out
+cp -u $mydir/../data/drug_indication_comb_cls_indication.ind  .
+cp -u $mydir/../bin/overlap_p_cls.py $mydir/../bin/scan_pval_py.job .
+
+
+set lst0=drug_indication_comb_cls_indication.ind
+
+set nd=`wc -l $lst0 | awk '{print $1}'`
+rm -if _pairover.txt
+
+set ind1=$1
+set me1=`head -$ind1 drug_indication_comb_cls_indication.ind  |tail -1 | awk '{print  $2}'`
+set nt=28678  
+cp -u $mydir/../bin/calov_bat_py  . 
+
+
+#NEW    fast ##
+echo ef-fexactpval-gene-z1.65-q0.05-noX-filt1.0 | awk '{for(l=1;l<=3608;l++) print "" $1 "/" l "_ef.txt"}'  >! lib.lst
+echo $ind1 >! input.lst 
+./calov_bat_py >! __co.out 
+paste __co.out  $lst0 | awk '{print "'$me1'",$9,$2,$3,$4,$5,$6,$7}' >! _pairover.txt 
+
+set nx=`wc -l _pairover.txt  | awk '{print $1}'`
+sort -g -k7 _pairover.txt  | awk '{i=i+1;q='$nx'/i*$7;t[i]=$0;s[i]=q}END{for(l=1;l<=i;l++){c=s[l];for(m=l+1;m<=i;m++)if(s[m]<c)c=s[m];print t[l],c}}' >! _pairover2.txt
+
+
+cat _pairover2.txt >! $mydir/ov-fexactpval-gene-z1.65-q0.05-noX-filt1.0-py/$ind1"_ov.txt" 
+
+
+cd $mydir 
+rm -irf $workdir 
+

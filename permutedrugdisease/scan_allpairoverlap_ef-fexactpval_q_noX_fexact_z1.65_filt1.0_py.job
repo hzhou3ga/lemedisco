@@ -1,0 +1,43 @@
+#!/bin/tcsh -f  
+
+### YOU NEED TO CHANGE TO YOUR PATHON PATH WITH SCILEARN PACKAGE INSTALLED ###
+setenv  PYTHON /local/images/anaconda2_4.4.0/bin/python 
+###
+
+set i=1
+lpi:
+
+set out=ov-fexactpval-gene-z1.65-q0.05-noX-filt1.0-py/$i"_ov.txt" 
+if ( ! -e ov-fexactpval-gene-z1.65-q0.05-noX-filt1.0-py ) mkdir ov-fexactpval-gene-z1.65-q0.05-noX-filt1.0-py
+set jj=1
+
+echo $i 
+if ( -e  $out  ) goto ok1
+
+set job=/tmp/${USER}/efficacy_q_noX_z1.65_permute.job
+set jbn=X${i}_NOTC${jj}
+
+set mydir=`pwd`
+
+
+echo "#\!/bin/tcsh -f " > ! $job
+echo "#PBS -e $mydir " >> $job
+echo "#PBS -N $jbn " >> $job
+echo " " >> $job
+echo "set rundir=$mydir " >> $job
+echo "cd  $mydir " >> $job 
+echo "./scan_pairoverlap_ef-fexactpval_q_noX_fexact_z1.65_filt1.0_py.job  $i " >> $job 
+chmod a+x $job 
+
+setenv PBS_JOBID testpairover2-z1.65-q-permute-py
+$job 
+#exit
+
+
+
+ok1:
+
+
+@ i = $i + 1
+if ( $i <= 3608 ) goto lpi
+ok:
