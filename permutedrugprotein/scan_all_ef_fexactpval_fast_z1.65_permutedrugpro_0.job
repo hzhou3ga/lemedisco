@@ -1,0 +1,86 @@
+#!/bin/tcsh -f  
+
+
+setenv PATH  /bin/:/sbin:/usr/bin
+
+set lst=$1
+if ( $1 == "" )  exit
+
+set mydir=`pwd`
+set workdir=/tmp/${USER}/${PBS_JOBID}
+if ( ! -e $workdir ) mkdir -p $workdir
+cd $workdir 
+cp $mydir/../data/drug_indication_comb_cls_indication.ind $mydir/../data/all_zscore_permuteproteindrug.out.gz .
+cp -u $mydir/../data/drug_5.09_app_ta.txt  $mydir/../data/drug_5.09_app.lst $mydir/../data/drug_5.09_app_permute.lst  .
+set nd=`wc -l drug_indication_comb_cls_indication.ind | awk '{print $1}'`
+paste drug_5.09_app_permute.lst  drug_5.09_app.lst  | awk '{print $2,$1}' >! drug_pt.lst
+gzip -d -f all_zscore_permuteproteindrug.out.gz
+
+set k=$1
+lpk:
+
+if ( -e $mydir/ef-fexactpval-z1.65/${k}_ef.txtx  ) then
+cat $mydir/ef-fexactpval-z1.65/${k}_ef.txt >! _ef.txt 
+goto ok1
+endif 
+
+head -$k drug_indication_comb_cls_indication.ind | tail -1 
+
+cat  all_zscore_permuteproteindrug.out | awk '{if($('$k')>=1.65) print $('$nd'+2) }' >! _dd.lst 
+#cat  all_zscore.out | awk '{if($('$k')>=1.65) print $('$nd'+2) }' >! _dd.lst 
+set nd2=`wc -l _dd.lst | awk '{print $1}'`
+cat  _dd.lst drug_pt.lst | awk '{i=i+1;if(i<='$nd2'){t[i]=$1}else{for(l=1;l<='$nd2';l++)if(t[l]==$1) print $2}}' >!  _dd_pt.lst
+
+cat  all_zscore_permuteproteindrug.out | awk '{if($('$k')<1.65) print $('$nd'+2) }' >! _nodd.lst 
+#cat  all_zscore.out | awk '{if($('$k')<1.65) print $('$nd'+2) }' >! _nodd.lst 
+set nond2=`wc -l _nodd.lst | awk '{print $1}'`
+cat  _nodd.lst drug_pt.lst | awk '{i=i+1;if(i<='$nond2'){t[i]=$1}else{for(l=1;l<='$nond2';l++)if(t[l]==$1) print $2}}' >!  _nodd_pt.lst
+
+
+cat _dd_pt.lst drug_5.09_app_ta.txt | awk '{i=i+1;if(i<='$nd2'){t[i]=$1}else{for(l=1;l<='$nd2';l++)if(t[l]==$1) print $0}}' > ! _dd_ta.txt
+cat _nodd_pt.lst drug_5.09_app_ta.txt | awk '{i=i+1;if(i<='$nond2'){t[i]=$1}else{for(l=1;l<='$nond2';l++)if(t[l]==$1){ print $0;break}}}' > ! _nodd_ta.txt
+
+echo $nd2 $nond2 | awk '{print $0,$1+$2}'
+
+sort -k2 _dd_ta.txt | awk '{if($2!=c){if(i>0) print c,i,i/'$nd2';i=1;c=$2}else{i=i+1}}END{print c,i,i/'$nd2'}' > ! _dd_ta_freq.txt
+sort -k2 _nodd_ta.txt | awk '{if($2!=c){if(i>0) print c,i,i/'$nond2';i=1;c=$2}else{i=i+1}}END{print c,i,i/'$nond2'}' > ! _nodd_ta_freq.txt
+
+set nt=`wc -l _dd_ta_freq.txt | awk '{print $1}'`
+cat _dd_ta_freq.txt _nodd_ta_freq.txt | awk '{i=i+1;if(i<='$nt'){t[i]=$1;s1[i]=$2;s2[i]=$3}else{x1=0;x2=0;for(l=1;l<='$nt';l++)if(t[l]==$1){x1=s1[l];x2=s2[l];break};print $0,x1,x2,x2/$3}}' >! _nodd_ta_dd_freq.txt
+
+mv -f _nodd_ta_dd_freq.txt  ${k}_ef.txt 
+
+set mmax=`wc -l ${k}_ef.txt  | awk '{print $1}'`
+
+
+set mm=1
+rm -if _ef.txt
+cp -u $mydir/../bin/fexact_cum .
+lpmm:
+set zz0=`head -$mm ${k}_ef.txt  | tail -1 | awk '{sd=100;rr=$6;if($6>0){a=$2;b=$2/$3-a;c=$4;d=$4/$5-c; sd=sqrt(1.0/a+1.0/c-1.0/(a+b)-1.0/(c+d));rr=(c/(d+c))/(a/(a+b));}; zz=-1;if(rr>0) zz=log(rr)/sd;print zz,rr}'`
+set zz=`echo $zz0 | awk '{print $1}'`
+set rr=`echo $zz0 | awk '{print $2}'`
+
+echo "2 2 0.0 0.0 0.0 " > ! _pval.inp
+head -$mm ${k}_ef.txt  | tail -1 | awk '{a=$2;b=0;if($3>0) b=$2/$3-a;c=$4;d=0;if($5>0) d=$4/$5-c;print c,int(d+0.1);print a,int(b+0.1)}' >> _pval.inp 
+
+set pv=`./fexact_cum<_pval.inp | awk '{if($1=="PRT") print $9}'`
+head -$mm  ${k}_ef.txt   |tail -1  | awk '{print $1,$2,$3,$4,$5,"'$rr'","'$zz'","'$pv'"}' >> _ef.txt 
+
+@ mm = $mm + 1
+if ( $mm <= $mmax ) goto lpmm
+
+if ( ! -e $mydir/ef-fexactpval-z1.65 ) mkdir -p $mydir/ef-fexactpval-z1.65
+cp -u _ef.txt $mydir/ef-fexactpval-z1.65/${k}_ef.txt 
+
+ok1:
+
+cat _ef.txt | awk '{if($7>-0.5) print $0}' >! __tmp.txt
+set nx=`wc -l __tmp.txt | awk '{print $1}'`
+sort -g -k8 __tmp.txt | awk '{i=i+1;q='$nx'/i*$8;t[i]=$0;s[i]=q}END{for(l=1;l<=i;l++){c=s[l];for(m=l+1;m<=i;m++)if(s[m]<c)c=s[m];print t[l],c}}' >! __tmp_ef.txt 
+if ( ! -e $mydir/ef-fexactpval-z1.65-q ) mkdir -p $mydir/ef-fexactpval-z1.65-q
+mv -f __tmp_ef.txt   $mydir/ef-fexactpval-z1.65-q/${k}"_ef.txt"
+
+
+cd $mydir
+rm -irf $workdir 
