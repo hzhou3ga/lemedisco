@@ -1,6 +1,3 @@
-First cd data unpack the allhumanatlas.zip.
-
-
 To reproduce disease MOA prediction
 
 cd thiswork
