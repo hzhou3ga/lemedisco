@@ -1,3 +1,6 @@
+Operating system:  Linux
+
+
 To reproduce disease MOA prediction
 
 cd thiswork
