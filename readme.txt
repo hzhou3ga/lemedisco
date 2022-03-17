@@ -24,13 +24,7 @@ Check against our calculation at subdirectory   "thisworksresult"
 
 
 To reproduce  disease-disease relations
-step 1:  MODIFY the file "scan_allpairoverlap_ef-fexactpval_q_noX_fexact_z1.65_filt1.0_py.job" 
 
-to change the envirnment variable "PYTHON" to point to your python program that has SCILEARN PACKAGE available:
-For example:  
-setenv  PYTHON /local/images/anaconda2_4.4.0/bin/python
-
-step 2: 
 type 
 ./scan_allpairoverlap_ef-fexactpval_q_noX_fexact_z1.65_filt1.0_py.job 
 
