@@ -1,3 +1,10 @@
+
+All disease-protein "alleffexactpvalgenez1.65q0.05noXfilt1.0_*.zip"
+disease-disease "allov-fexactpval-gene-z1.65-q0.05-noX-filt1.0-py_n1_n2.zip" 
+relationships are at  directory  "thiswork/thisworksresult"
+All benchmark results are at benchmark directory
+
+
 Operating system:  Linux
 
 
